@@ -67,8 +67,8 @@ if submit and uploaded_file:
     # Displaying Response
     try:
         response_dict = eval(response)
-        st.subheader(f"JD Match: {response_dict.get("JD Match")}")
-        st.write("A JD Matach of 75% and above is considered as good")
+        st.subheader("JD Match:")
+        st.write(response_dict.get("JD Match", "N/A"))
 
         st.subheader("Missing Keywords:")
         st.write(response_dict.get("MissingKeywords", []))
@@ -80,6 +80,6 @@ if submit and uploaded_file:
         st.error(f"Error processing the response: {e}")
  
 
-# Add a footer 
-st.divider()  
-st.caption('Created with ❤️ by :blue[Rohit]')
+# Add a footer
+st.markdown("---")
+st.divider()
