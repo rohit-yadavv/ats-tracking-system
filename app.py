@@ -67,7 +67,7 @@ if submit and uploaded_file:
     # Displaying Response
     try:
         response_dict = eval(response)
-        st.subheader(f"JD Match: {response_dict.get("JD Match", "N/A")}")
+        st.subheader(f"JD Match: {response_dict.get("JD Match")}")
         st.write("A JD Matach of 75% and above is considered as good")
 
         st.subheader("Missing Keywords:")
