@@ -1,125 +1,85 @@
-from dotenv import load_dotenv
-import base64
 import streamlit as st
-import os
-import io
-from PIL import Image 
-import pdf2image
 import google.generativeai as genai
+import os
+import PyPDF2 as pdf
+from dotenv import load_dotenv
 
-# Set the Poppler path explicitly
-poppler_path = r'E:\Downloads\Release-23.11.0-0\poppler-23.11.0\Library\bin'
-
+# Load environment variables
+load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-def get_gemini_response(input, pdf_content, prompt):
-    model = genai.GenerativeModel('gemini-pro-vision')
-    response = model.generate_content([input, pdf_content[0], prompt])
+def get_gemini_response(input):
+    model = genai.GenerativeModel('gemini-pro')
+    response = model.generate_content(input)
     return response.text
 
-def input_pdf_setup(uploaded_file):
-    if uploaded_file is not None:
-        # Convert the PDF to image 
-        images = pdf2image.convert_from_bytes(uploaded_file.read(), poppler_path=poppler_path)
+def input_pdf_text(uploaded_file):
+    reader = pdf.PdfReader(uploaded_file)
+    text = ""
+    for page in range(len(reader.pages)):
+        page = reader.pages[page]
+        text += str(page.extract_text())
+    return text
 
-        first_page = images[0]
+# Prompt Template
+input_prompt = """
+Hey, act like a skilled or very experienced ATS (Application Tracking System)
+with a deep understanding of the tech field, software engineering, data science, data analysis,
+and big data engineering. Your task is to evaluate the resume based on the given job description.
+Consider that the job market is very competitive, and you should provide 
+the best assistance for improving the resumes. Assign the percentage matching based 
+on JD and
+the missing keywords with high accuracy.
+Resume: {text}
+Description: {jd}
 
-        # Convert to bytes
-        img_byte_arr = io.BytesIO()
-        first_page.save(img_byte_arr, format='JPEG')
-        img_byte_arr = img_byte_arr.getvalue()
+I want the response in one single string having the structure
+{{"JD Match": "%", "MissingKeywords": [], "Profile Summary": ""}}
+"""
 
-        pdf_parts = [
-            {
-                "mime_type": "image/jpeg",
-                "data": base64.b64encode(img_byte_arr).decode()  # encode to base64
-            }
-        ]
-        return pdf_parts
-    else:
-        raise FileNotFoundError("No file uploaded")
-
-# Streamlit App
+# Streamlit app
 st.set_page_config(
-    page_title="ATS Resume Expert",
-    page_icon="📄",
-    layout="wide",
-    initial_sidebar_state="collapsed",
+    page_title="Smart ATS",
+    page_icon="✨",
+    layout="wide"
 )
 
-# Main Content Styling
- 
-
-# Main Content
-st.title("Resume Analysis App")
+# Main content
+st.title("Smart ATS")
 
 # Job Description Input
-input_text = st.text_area("Enter Job Description:", key="input")
+jd = st.text_area("Paste the Job Description", height=150)
 
 # Upload Resume
-uploaded_file = st.file_uploader("Upload your resume (PDF)...", type=["pdf"])
+uploaded_file = st.file_uploader("Upload Your Resume (PDF)", type="pdf", help="Please upload the PDF")
 
-if uploaded_file is not None:
-    st.success("PDF Uploaded Successfully")
+# Submit Button
+submit = st.button("Submit")
 
-# Buttons Styling
-st.markdown(
-    """
-    <style>
-        .stButton>button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 5px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s ease;
-        }
-        .stButton:hover>button { 
-            color: white; 
-            border-color: #4caf50;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+# Result Section
+if submit and uploaded_file:
+    st.markdown("---") 
 
-# Buttons
-col1, col2 = st.columns(2)
+    # Analyzing Resume and Generating Response
+    text = input_pdf_text(uploaded_file)
+    response = get_gemini_response(input_prompt.format(text=text, jd=jd))
 
-with col1:
-    submit1 = st.button("Tell Me About the Resume", key="tell_me_button")
-    input_prompt1 = """
-    You are an experienced HR with tech experience in the field of any one job role from Full stack
-    Web development, Data Science, DEVOPS. Your task is to review the provided resume against the job description for these profiles.
-    Please share your professional evaluation on whether the candidate's profile aligns with the role.
-    Highlight the strengths and weaknesses of the applicant in relation to the specified job requirements.
-    """ 
-    st.markdown("<small><i>Tip: Click the button to analyze the resume.</i></small>", unsafe_allow_html=True)
+    # Displaying Response
+    try:
+        response_dict = eval(response)
+        st.subheader(f"JD Match: {response_dict.get("JD Match", "N/A")}")
+        st.write("A JD Matach of 75% and above is considered as good")
 
-with col2:
-    submit3 = st.button("Percentage Match", key="percentage_match_button")
-    input_prompt3 = """
-    You are a skilled ATS (Applicant Tracking System) scanner with a deep understanding of any one job role from Full stack Web development, Data Science, DEVOPS, and ATS functionality. Your task is to evaluate the resume against the provided job description. Give me the percentage of match if the resume matches
-    the job description. First, the output should come as a percentage, and then keywords missing, and last final thoughts.
-    """
-    st.markdown("<small><i>Tip: Click the button to calculate the percentage match.</i></small>", unsafe_allow_html=True)
+        st.subheader("Missing Keywords:")
+        st.write(response_dict.get("MissingKeywords", []))
 
-# Button Actions
-if submit1:
-    if uploaded_file is not None:
-        pdf_content = input_pdf_setup(uploaded_file)
-        response = get_gemini_response(input_prompt1, pdf_content, input_text)
-        st.subheader("Analysis Result:")
-        st.write(response)
-    else:
-        st.warning("Please upload the resume")
+        st.subheader("Profile Summary:")
+        st.write(response_dict.get("Profile Summary", "N/A"))
 
-elif submit3:
-    if uploaded_file is not None:
-        pdf_content = input_pdf_setup(uploaded_file)
-        response = get_gemini_response(input_prompt3, pdf_content, input_text)
-        st.subheader("Analysis Result:")
-        st.write(response)
-    else:
-        st.warning("Please upload the resume")
+    except Exception as e:
+        st.error(f"Error processing the response: {e}")
+ 
+
+# Add a footer 
+st.divider()  
+st.caption('Created with ❤️ by :blue[Rohit]')
