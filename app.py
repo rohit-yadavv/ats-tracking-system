@@ -36,50 +36,42 @@ Description: {jd}
 I want the response in one single string having the structure
 {{"JD Match": "%", "MissingKeywords": [], "Profile Summary": ""}}
 """
-
+ 
 # Streamlit app
 st.set_page_config(
     page_title="Smart ATS",
     page_icon="✨",
     layout="wide"
-)
-
-# Main content
-st.title("Smart ATS")
-
-# Job Description Input
-jd = st.text_area("Paste the Job Description", height=150)
-
-# Upload Resume
-uploaded_file = st.file_uploader("Upload Your Resume (PDF)", type="pdf", help="Please upload the PDF")
-
-# Submit Button
+) 
+st.title("Smart ATS Tracking System")
+st.markdown(":dart: Elevate your hiring game! This Smart ATS system effortlessly analyzes resumes, delivering a quick percentage match and highlighting missing keywords. Simplify your recruitment journey.")
+jd = st.text_area(":gray[Paste the Job Description]", height=150)
+ 
+uploaded_file = st.file_uploader(":gray[Upload Your Resume :red[(PDF)]]", type="pdf", help="Please upload the PDF")
+ 
 submit = st.button("Submit")
-
-# Result Section
+ 
 if submit and uploaded_file:
     st.markdown("---") 
-
-    # Analyzing Resume and Generating Response
+ 
     text = input_pdf_text(uploaded_file)
     response = get_gemini_response(input_prompt.format(text=text, jd=jd))
-
-    # Displaying Response
+ 
     try:
+        
         response_dict = eval(response)
-        st.subheader("JD Match:")
-        st.write(response_dict.get("JD Match", "N/A"))
-
-        st.subheader("Missing Keywords:")
+        st.subheader(f":rainbow[JD Match:] {response_dict.get('JD Match', 'N/A')}") 
+        st.caption('Jd Match should be above 75%')
+        st.subheader(":rainbow[Missing Keywords:]")
         st.write(response_dict.get("MissingKeywords", []))
 
-        st.subheader("Profile Summary:")
+        st.subheader(":rainbow[Profile Summary:]")
         st.write(response_dict.get("Profile Summary", "N/A"))
 
     except Exception as e:
         st.error(f"Error processing the response: {e}")
  
 
-# Add a footer
-st.markdown("---")
+# Add a footer 
 st.divider()
+st.markdown("Created with :red[❤️] by :rainbow[Rohit Yadav]")
