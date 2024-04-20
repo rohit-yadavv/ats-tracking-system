@@ -1,6 +1,5 @@
 Here's a README template for your project, "ATS Tracking":
 
-````markdown
 # ATS Tracking
 
 ATS Tracking is a powerful tool designed to simplify the recruitment process by effortlessly analyzing resumes, delivering a quick percentage match, and highlighting missing keywords. With ATS Tracking, streamline your recruitment journey and make informed hiring decisions.
@@ -63,4 +62,3 @@ Contributions are welcome! If you'd like to contribute to ATS Tracking, please f
 3. Make your changes and commit them (`git commit -am 'Add new feature'`).
 4. Push your changes to your fork (`git push origin feature/new-feature`).
 5. Create a new Pull Request.
-````
