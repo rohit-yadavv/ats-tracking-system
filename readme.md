@@ -1,5 +1,3 @@
-Here's a README template for your project, "ATS Tracking":
-
 # ATS Tracking
 
 ATS Tracking is a powerful tool designed to simplify the recruitment process by effortlessly analyzing resumes, delivering a quick percentage match, and highlighting missing keywords. With ATS Tracking, streamline your recruitment journey and make informed hiring decisions.
@@ -12,6 +10,8 @@ ATS Tracking is a powerful tool designed to simplify the recruitment process by 
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [License](#license)
+
+![image](https://github.com/user-attachments/assets/eddc4f1b-5749-4eb5-b25c-e0817a7e4662)
 
 ## Features
 
